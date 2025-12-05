@@ -1,5 +1,5 @@
 import * as os from "os";
-import { join as joinPath } from "path";
+import { join } from "path";
 import { Uri, workspace, FileSystemError } from "vscode";
 
 import { logger } from "./extension";
@@ -44,7 +44,7 @@ export const findConfigFile = async (
 ): Promise<string> => {
   const possiblePaths = preferredUserDir
     ? [
-        joinPath(preferredUserDir, file),
+        join(preferredUserDir, file),
         ...getConfigPaths(appName, file),
       ]
     : getConfigPaths(appName, file);
