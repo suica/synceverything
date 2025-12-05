@@ -1,4 +1,5 @@
 import { readFile } from "fs/promises";
+import * as path from "path";
 import JSON5 from "json5";
 import {
     Extension,
@@ -28,6 +29,7 @@ export default class SyncEverything {
     logger: Logger,
     context: ExtensionContext
   ): Promise<SyncEverything | undefined> {
+    const userConfigDir = SyncEverything.getUserConfigDir(context);
     const appName: string = env.appName.includes("Code")
       ? env.appName.includes("Insiders")
         ? "Code - Insiders"
@@ -35,7 +37,11 @@ export default class SyncEverything {
       : "Cursor";
     if (!context.globalState.get("settingsPath")) {
       try {
-        const settingsPath = await findConfigFile(appName, "settings.json");
+        const settingsPath = await findConfigFile(
+          appName,
+          "settings.json",
+          userConfigDir
+        );
         context.globalState.update("settingsPath", settingsPath);
       } catch (error) {
         logger.error(
@@ -60,7 +66,8 @@ export default class SyncEverything {
       try {
         const keybindingsPath:string = await findConfigFile(
           appName,
-          "keybindings.json"
+          "keybindings.json",
+          userConfigDir
         );
         context.globalState.update("keybindingsPath", keybindingsPath);
       } catch (error) {
@@ -84,6 +91,17 @@ export default class SyncEverything {
     }
     return new SyncEverything(logger, context);
   }
+
+  private static getUserConfigDir(
+    context: ExtensionContext
+  ): string | undefined {
+    try {
+      return path.resolve(context.globalStorageUri.fsPath, "..", "..");
+    } catch (error) {
+      return undefined;
+    }
+  }
+
   public static async setManualPath(
     t: "keybindings" | "settings",
     title?: string
