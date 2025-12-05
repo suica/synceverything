@@ -4,6 +4,28 @@ import { Uri, workspace, FileSystemError } from "vscode";
 
 import { logger } from "./extension";
 
+const getCustomUserDir = (): string | undefined => {
+  const args = process.argv;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg.startsWith("--user-data-dir")) {
+      continue;
+    }
+
+    const inlineValue = arg.split("=")[1];
+    if (inlineValue) {
+      return path.join(path.resolve(inlineValue), "User");
+    }
+
+    const nextValue = args[i + 1];
+    if (nextValue && !nextValue.startsWith("--")) {
+      return path.join(path.resolve(nextValue), "User");
+    }
+  }
+
+  return undefined;
+};
+
 const getConfigPaths = (
   appName: string,
   file: string,
@@ -32,8 +54,9 @@ const getConfigPaths = (
     }
   })();
 
-  if (preferredUserDir) {
-    return [path.join(preferredUserDir, file), ...platformPaths];
+  const configuredUserDir = preferredUserDir ?? getCustomUserDir();
+  if (configuredUserDir) {
+    return [path.join(configuredUserDir, file), ...platformPaths];
   }
 
   return platformPaths;
