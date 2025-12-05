@@ -1,36 +1,10 @@
 import * as os from "os";
-import * as path from "path";
+import * as nodePath from "path";
 import { Uri, workspace, FileSystemError } from "vscode";
 
 import { logger } from "./extension";
 
-const getCustomUserDir = (): string | undefined => {
-  const args = process.argv;
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (!arg.startsWith("--user-data-dir")) {
-      continue;
-    }
-
-    const inlineValue = arg.split("=")[1];
-    if (inlineValue) {
-      return path.join(path.resolve(inlineValue), "User");
-    }
-
-    const nextValue = args[i + 1];
-    if (nextValue && !nextValue.startsWith("--")) {
-      return path.join(path.resolve(nextValue), "User");
-    }
-  }
-
-  return undefined;
-};
-
-const getConfigPaths = (
-  appName: string,
-  file: string,
-  preferredUserDir?: string
-): string[] => {
+const getConfigPaths = (appName: string, file: string): string[] => {
   const platformPaths = (() => {
     switch (os.platform()) {
       case "win32":
@@ -53,12 +27,6 @@ const getConfigPaths = (
         ];
     }
   })();
-
-  const configuredUserDir = preferredUserDir ?? getCustomUserDir();
-  if (configuredUserDir) {
-    return [path.join(configuredUserDir, file), ...platformPaths];
-  }
-
   return platformPaths;
 };
 
@@ -77,10 +45,15 @@ export const findConfigFile = async (
   file: string,
   preferredUserDir?: string
 ): Promise<string> => {
-  const possiblePaths = getConfigPaths(appName, file, preferredUserDir);
-  for (const candidatePath of possiblePaths) {
-    if (await pathExists(candidatePath)) {
-      return Uri.file(candidatePath).fsPath;
+  const possiblePaths = preferredUserDir
+    ? [
+        nodePath.join(preferredUserDir, file),
+        ...getConfigPaths(appName, file),
+      ]
+    : getConfigPaths(appName, file);
+  for (const path of possiblePaths) {
+    if (await pathExists(path)) {
+      return Uri.file(path).fsPath;
     } else {
       continue;
     }
