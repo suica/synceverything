@@ -29,7 +29,7 @@ export default class SyncEverything {
     logger: Logger,
     context: ExtensionContext
   ): Promise<SyncEverything | undefined> {
-    const userConfigDir = SyncEverything.getUserConfigDir(context);
+    const userConfigDir = SyncEverything.getUserConfigDir(context, logger);
     const appName: string = env.appName.includes("Code")
       ? env.appName.includes("Insiders")
         ? "Code - Insiders"
@@ -93,11 +93,18 @@ export default class SyncEverything {
   }
 
   private static getUserConfigDir(
-    context: ExtensionContext
+    context: ExtensionContext,
+    logger: Logger
   ): string | undefined {
     try {
       return path.resolve(context.globalStorageUri.fsPath, "..", "..");
     } catch (error) {
+      logger.error(
+        "Failed to resolve user configuration directory",
+        "SyncEverything.getUserConfigDir",
+        false,
+        error
+      );
       return undefined;
     }
   }
