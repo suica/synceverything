@@ -35,14 +35,15 @@ export default class SyncEverything {
         ? "Code - Insiders"
         : "Code"
       : "Cursor";
-    if (!context.globalState.get("settingsPath")) {
+    const settingsPathExisting = context.globalState.get("settingsPath");
+    if (!settingsPathExisting || settingsPathExisting === ".") {
       try {
         const settingsPath = await findConfigFile(
           appName,
           "settings.json",
           userConfigDir
         );
-        context.globalState.update("settingsPath", settingsPath);
+        await context.globalState.update("settingsPath", settingsPath);
       } catch (error) {
         logger.error(
           "Failed to automatically find settings.json file - opening file picker",
@@ -51,7 +52,7 @@ export default class SyncEverything {
         );
         try {
           const settingsPath = await SyncEverything.setManualPath("settings");
-          context.globalState.update("settingsPath", settingsPath);
+          await context.globalState.update("settingsPath", settingsPath);
         } catch (error) {
           logger.error(
             "Configuration files are required for SyncEverything to work, please reactivate extension and select correct configuration files.",
@@ -62,14 +63,15 @@ export default class SyncEverything {
         }
       }
     }
-    if (!context.globalState.get("keybindingsPath")) {
+    const keybindingsPathExisting = context.globalState.get("keybindingsPath");
+    if (!keybindingsPathExisting || keybindingsPathExisting === ".") {
       try {
         const keybindingsPath:string = await findConfigFile(
           appName,
           "keybindings.json",
           userConfigDir
         );
-        context.globalState.update("keybindingsPath", keybindingsPath);
+        await context.globalState.update("keybindingsPath", keybindingsPath);
       } catch (error) {
         logger.error(
           "Failed to automatically find keybindings.json file - opening file picker",
@@ -78,7 +80,7 @@ export default class SyncEverything {
         );
         try {
           const keybindingsPath:string = await SyncEverything.setManualPath("keybindings");
-          context.globalState.update("keybindingsPath", keybindingsPath);
+          await context.globalState.update("keybindingsPath", keybindingsPath);
         } catch (error) {
           logger.error(
             "Configuration files are required for SyncEverything to work, please reactivate extension and select correct configuration files.",
@@ -97,6 +99,9 @@ export default class SyncEverything {
     logger: Logger
   ): string | undefined {
     try {
+      // globalStorageUri is typically:
+      // <user-data-dir>/User/globalStorage/<extension-id>
+      // We want the User config directory: <user-data-dir>/User
       return path.resolve(context.globalStorageUri.fsPath, "..", "..");
     } catch (error) {
       logger.error(

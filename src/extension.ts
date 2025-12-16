@@ -21,6 +21,18 @@ export async function activate(ctx: vscode.ExtensionContext) {
 		logger = new Logger();
 		logger.info('Extension activation started');
 
+		// Internal test-only command (not contributed to UI) to allow e2e tests
+		// to assert which configuration files were resolved.
+		const __testGetResolvedConfigPaths = vscode.commands.registerCommand(
+			'synceverything.__test.getResolvedConfigPaths',
+			() => {
+				return {
+					settingsPath: ctx.globalState.get<string>('settingsPath'),
+					keybindingsPath: ctx.globalState.get<string>('keybindingsPath'),
+				};
+			}
+		);
+
 		// Initialize Status Bar
 		statusBarItem = vscode.window.createStatusBarItem(
 			vscode.StatusBarAlignment.Right,
@@ -450,6 +462,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 			SetManualPath,
 			ShowMenu,
 			ShowLogs,
+			__testGetResolvedConfigPaths,
 			statusBarItem,
 			logger
 		);
