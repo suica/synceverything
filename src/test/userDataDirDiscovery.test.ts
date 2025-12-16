@@ -9,7 +9,6 @@ const TEST_COMMAND = "synceverything.__test.getResolvedConfigPaths";
 
 describe("Config discovery honors user-data-dir", () => {
   it("prefers <user-data-dir>/User when resolving settings/keybindings", async function () {
-    this.timeout(20000);
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     assert.ok(workspaceFolder, "workspaceFolder should be set for tests");
     const userDataDir = path.resolve(
@@ -30,11 +29,11 @@ describe("Config discovery honors user-data-dir", () => {
     assert.ok(result, "Test command should return a result object");
 
     assert.strictEqual(
-      path.resolve(path.normalize(result.settingsPath ?? "")),
+      path.normalize(result.settingsPath ?? ""),
       path.normalize(expectedSettingsPath)
     );
     assert.strictEqual(
-      path.resolve(path.normalize(result.keybindingsPath ?? "")),
+      path.normalize(result.keybindingsPath ?? ""),
       path.normalize(expectedKeybindingsPath)
     );
   });

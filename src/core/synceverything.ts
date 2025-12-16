@@ -36,7 +36,7 @@ export default class SyncEverything {
         : "Code"
       : "Cursor";
     const settingsPathExisting = context.globalState.get("settingsPath");
-    if (!settingsPathExisting || settingsPathExisting === ".") {
+    if (!settingsPathExisting) {
       try {
         const settingsPath = await findConfigFile(
           appName,
@@ -64,7 +64,7 @@ export default class SyncEverything {
       }
     }
     const keybindingsPathExisting = context.globalState.get("keybindingsPath");
-    if (!keybindingsPathExisting || keybindingsPathExisting === ".") {
+    if (!keybindingsPathExisting) {
       try {
         const keybindingsPath:string = await findConfigFile(
           appName,
